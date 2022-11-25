@@ -6,5 +6,12 @@ authors = ["Kacper \"Nyjako\" Tucholski"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[bin]]
+name = "shapes"
+
+[[bin]]
+name = "circle"
+
 [dependencies]
 nannou = "0.18.1"
+rand = "0.8.5"
