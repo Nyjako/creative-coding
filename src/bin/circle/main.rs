@@ -12,7 +12,7 @@ struct Model {
     position: Point2,
     velocity: Point2
 }
-const SPEED: f32 = 6.0;
+const SPEED: f32 = 10.0;
 const RADIUS: f32 = 25.0;
 
 fn model(_app: &App) -> Model {

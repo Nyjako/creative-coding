@@ -12,6 +12,9 @@ name = "shapes"
 [[bin]]
 name = "circle"
 
+[[bin]]
+name = "circles"
+
 [dependencies]
 nannou = "0.18.1"
 rand = "0.8.5"
