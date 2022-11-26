@@ -26,44 +26,14 @@ struct Circle {
 struct Model {
     circles: Vec<Circle>
 }
-const CIRCLE_LIMIT: i32 = 100;
+const CIRCLE_LIMIT: i32 = 150;
 
 fn model(_app: &App) -> Model {
-
-    Model {
+    let mut model = Model {
         circles: Vec::new()
-    }
-}
-
-fn update(app: &App, model: &mut Model, _update: Update) {
-    let boundary = app.window_rect();
-
-    let mut to_remove: Vec<usize> = Vec::new();
-
-    for i in 0..model.circles.len() {
-
-        let circle = &model.circles[i];
-        let new_pos = circle.position + circle.velocity * circle.speed;
-
-        if  new_pos.x - circle.radius > boundary.right() ||
-            new_pos.x + circle.radius < boundary.left() ||
-            new_pos.y - circle.radius > boundary.top() || 
-            new_pos.y + circle.radius < boundary.bottom() 
-        {
-            to_remove.push(i);
-            continue;
-        }
-
-        model.circles[i].position = new_pos;
-    }
-
-    for i in 0..to_remove.len() {
-        model.circles.remove(i);
-    }
+    };
 
     while model.circles.len() < CIRCLE_LIMIT as usize {
-        // let pos_x = (random::<f32>() * (boundary.right() + boundary.left())) - boundary.left();
-        // let pos_y = (random::<f32>() * (boundary.top() + boundary.bottom())) - boundary.bottom();
         let vel_x = random::<f32>() * 2.0 - 1.0;
         let vel_y = random::<f32>() * 2.0 - 1.0;
 
@@ -81,6 +51,38 @@ fn update(app: &App, model: &mut Model, _update: Update) {
         };
 
         model.circles.push(new_circle);
+    }
+
+    model
+}
+
+fn update(app: &App, model: &mut Model, _update: Update) {
+    let boundary = app.window_rect();
+
+    for i in 0..model.circles.len() {
+
+        let circle = &model.circles[i];
+        let mut new_pos = circle.position + circle.velocity * circle.speed;
+        let mut new_vel = circle.velocity;
+
+        if  new_pos.x > boundary.right() + circle.radius + 0.1 ||
+            new_pos.x < boundary.left() - circle.radius - 0.1 ||
+            new_pos.y > boundary.top() + circle.radius + 0.1 || 
+            new_pos.y < boundary.bottom() - circle.radius - 0.1 
+        {
+            new_pos = pt2(0.0, 0.0);
+        }
+        else if  new_pos.x > boundary.right() - circle.radius ||
+                 new_pos.x < boundary.left() + circle.radius {
+            new_vel.x *= -1.0;
+        }
+        else if new_pos.y > boundary.top() - circle.radius || 
+                new_pos.y < boundary.bottom() + circle.radius {
+            new_vel.y *= -1.0;
+        }
+
+        model.circles[i].position = new_pos;
+        model.circles[i].velocity = new_vel;
     }
 }
 
