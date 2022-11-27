@@ -19,6 +19,10 @@ name = "circles"
 # Multiple bouncing circles (just more complex one)
 # if laggy run with "cargo run --bin circles --release"
 
+[[bin]]
+name = "maze-generator"
+# Maze generator
+
 [dependencies]
 nannou = "0.18.1"
 rand = "0.8.5"
