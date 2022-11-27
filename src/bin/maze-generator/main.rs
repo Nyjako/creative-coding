@@ -10,6 +10,11 @@ const STROKE: f32 = 3.0;
 const W_SPACING: f32 = (WIDTH / COLS) as f32;
 const H_SPACING: f32 = (HEIGHT / ROWS) as f32;
 
+const BG_COL:      rgb::Srgb<u8> = WHITE;
+const WALLS_COL:   rgb::Srgb<u8> = BLACK;
+const WALKER_COL:  rgb::Srgb<u8> = LIME;
+const HISTORY_COL: rgb::Srgb<u8> = PINK;
+
 fn main() {
     nannou::app(model)
         .update(update)
@@ -64,16 +69,16 @@ fn draw_maze(maze: [[Cell; ROWS as usize]; COLS as usize], draw: &Draw) {
             let temp_y = H_SPACING * j as f32;
 
             if temp.top {
-                draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x + W_SPACING, temp_y)).color(BLACK).weight(STROKE);
+                draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x + W_SPACING, temp_y)).color(WALLS_COL).weight(STROKE);
             }
             if temp.bottom {
-                draw.line().start(pt2(temp_x, temp_y + H_SPACING)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(BLACK).weight(STROKE);
+                draw.line().start(pt2(temp_x, temp_y + H_SPACING)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
             }
             if temp.left {
-                draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x, temp_y + H_SPACING)).color(BLACK).weight(STROKE);
+                draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
             }
             if temp.right {
-                draw.line().start(pt2(temp_x + W_SPACING, temp_y)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(BLACK).weight(STROKE);
+                draw.line().start(pt2(temp_x + W_SPACING, temp_y)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
             }
         }
     }
@@ -81,12 +86,12 @@ fn draw_maze(maze: [[Cell; ROWS as usize]; COLS as usize], draw: &Draw) {
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let boundary = app.window_rect();
-    frame.clear(WHITE);
+    frame.clear(BG_COL);
     let draw = app.draw().x_y(boundary.left(), boundary.bottom()); // (0,0) is now left bottom 
 
     let spacing = pt2(W_SPACING, H_SPACING);
 
-    draw.rect().xy(model.walker * spacing + spacing * 0.5).wh(spacing).color(LIME);
+    draw.rect().xy(model.walker * spacing + spacing * 0.5).wh(spacing).color(WALKER_COL);
     draw_maze(model.maze, &draw);
 
     draw.to_frame(app, &frame).unwrap();
