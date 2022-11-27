@@ -1,6 +1,12 @@
 use nannou::prelude::*;
 use rand::random;
 
+const CIRCLES_LIMIT: usize = 150;
+const MIN_SIZE:  f32 = 25.0;
+const MAX_SIZE:  f32 = 50.0;
+const MIN_SPEED: f32 = 5.0;
+const MAX_SPEED: f32 = 10.0;
+
 fn main() {
     nannou::app(model)
         .update(update)
@@ -26,27 +32,26 @@ struct Circle {
 struct Model {
     circles: Vec<Circle>
 }
-const CIRCLE_LIMIT: i32 = 150;
 
 fn model(_app: &App) -> Model {
     let mut model = Model {
         circles: Vec::new()
     };
 
-    while model.circles.len() < CIRCLE_LIMIT as usize {
+    while model.circles.len() < CIRCLES_LIMIT {
         let vel_x = random::<f32>() * 2.0 - 1.0;
         let vel_y = random::<f32>() * 2.0 - 1.0;
 
         let new_circle = Circle {
             position: pt2(0.0, 0.0),
             velocity: pt2(vel_x, vel_y),
-            speed: random::<f32>() * 10.0 + 10.0,
-            radius: random::<f32>() * 50.0 + 50.0,
+            speed: random::<f32>() * (MAX_SPEED - MIN_SPEED) + MIN_SPEED,
+            radius: random::<f32>() * (MAX_SIZE - MIN_SIZE) + MIN_SIZE,
             color: Color {
                 r: random::<f32>(),
                 g: random::<f32>(),
                 b: random::<f32>(),
-                a: random::<f32>()
+                a: random::<f32>() * 0.5 + 5.0 // 0.5 - 1.0
             }
         };
 

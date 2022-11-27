@@ -8,12 +8,16 @@ authors = ["Kacper \"Nyjako\" Tucholski"]
 
 [[bin]]
 name = "shapes"
+# Simple shapes to get used to lib
 
 [[bin]]
 name = "circle"
+# Bouncing circle
 
 [[bin]]
 name = "circles"
+# Multiple bouncing circles (just more complex one)
+# if laggy run with "cargo run --bin circles --release"
 
 [dependencies]
 nannou = "0.18.1"
