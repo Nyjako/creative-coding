@@ -1,11 +1,11 @@
 use nannou::prelude::*;
-use rand::random;
+use rand::seq::SliceRandom;
 
-const WIDTH: u32  = 600;
-const HEIGHT: u32 = 600;
-const COLS: u32   = 8;
-const ROWS: u32   = 8;
-const STROKE: f32 = 3.0;
+const WIDTH: u32  = 800;
+const HEIGHT: u32 = 800;
+const COLS: u32   = 50;
+const ROWS: u32   = 50;
+const STROKE: f32 = 1.0;
 
 const W_SPACING: f32 = (WIDTH / COLS) as f32;
 const H_SPACING: f32 = (HEIGHT / ROWS) as f32;
@@ -61,6 +61,8 @@ fn visited(pos: Vec2, maze: &[[Cell; ROWS as usize]; COLS as usize]) -> bool {
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update) {
+    model.maze[model.walker.x as usize][model.walker.y as usize].visited = true;
+    
     let mut posible_moves: Vec<Vec2> = Vec::new();
 
     if model.walker.y > 0.0 && !visited(pt2(model.walker.x, model.walker.y - 1.0), &model.maze) {
@@ -69,7 +71,7 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
     if model.walker.y < (ROWS - 1) as f32 && !visited(pt2(model.walker.x, model.walker.y + 1.0), &model.maze) {
         posible_moves.push(pt2(model.walker.x, model.walker.y + 1.0));
     }
-    if model.walker.x > 0.0 && !visited(pt2(model.walker.x - 0.0, model.walker.y), &model.maze) {
+    if model.walker.x > 0.0 && !visited(pt2(model.walker.x - 1.0, model.walker.y), &model.maze) {
         posible_moves.push(pt2(model.walker.x - 1.0, model.walker.y));
     }
     if model.walker.x < (COLS - 1) as f32 && !visited(pt2(model.walker.x + 1.0, model.walker.y), &model.maze) {
@@ -77,36 +79,30 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
     }
 
     if posible_moves.len() > 0 {
-        let random_move = random::<usize>() % posible_moves.len();
-        let temp_diff = posible_moves[random_move] - model.walker;
+        let random_move = posible_moves.choose(&mut rand::thread_rng()).unwrap();
+        let temp_diff = *random_move - model.walker;
         let x = temp_diff.x;
         let y = temp_diff.y;
         let walker_x = model.walker.x as usize;
         let walker_y = model.walker.y as usize;
 
-        // println!("{} {} {} {}\n{} {} {} {}\n{}", walker_x, walker_y, x, y, model.walker.x, model.walker.y, posible_moves[random_move].x, posible_moves[random_move].y, random_move);
+        model.history.push(model.walker);
 
-        // TODO: Something is wrong in update
         if x > 0.0 {
             model.maze[walker_x][walker_y].right = false;
             model.maze[walker_x + 1][walker_y].left = false;
-            model.maze[walker_x + 1][walker_y].visited = true;
         } else if x < 0.0 {
             model.maze[walker_x][walker_y].left = false;
             model.maze[walker_x - 1][walker_y].right = false;
-            model.maze[walker_x - 1][walker_y].visited = true;
         } else if y < 0.0 {
             model.maze[walker_x][walker_y].bottom = false;
             model.maze[walker_x][walker_y - 1].top = false;
-            model.maze[walker_x][walker_y - 1].visited = true;
         } else if y > 0.0 {
             model.maze[walker_x][walker_y].top = false;
             model.maze[walker_x][walker_y + 1].bottom = false;
-            model.maze[walker_x][walker_y + 1].visited = true;
         }
 
-        model.history.push(model.walker);
-        model.walker = posible_moves[random_move];
+        model.walker = *random_move;
     }
     else if model.history.len() > 0 {
         model.walker = model.history.pop().unwrap();
@@ -122,16 +118,20 @@ fn draw_maze(maze: [[Cell; ROWS as usize]; COLS as usize], draw: &Draw) {
             let temp_x = W_SPACING * i as f32;
             let temp_y = H_SPACING * j as f32;
 
-            if temp.top {
-                draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x + W_SPACING, temp_y)).color(WALLS_COL).weight(STROKE);
+            if temp.bottom && j != 0 {
+                if !maze[i as usize][j as usize - 1].top {
+                    draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x + W_SPACING, temp_y)).color(WALLS_COL).weight(STROKE);
+                }
             }
-            if temp.bottom {
-                draw.line().start(pt2(temp_x, temp_y + H_SPACING)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
+            if temp.top && j != COLS - 1 {
+                    draw.line().start(pt2(temp_x, temp_y + H_SPACING)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
             }
-            if temp.left {
-                draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
+            if temp.left && i != 0 {
+                if !maze[i as usize - 1][j as usize].right {
+                    draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
+                }
             }
-            if temp.right {
+            if temp.right && i != ROWS - 1 {
                 draw.line().start(pt2(temp_x + W_SPACING, temp_y)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
             }
         }
