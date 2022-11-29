@@ -31,3 +31,4 @@ name = "tic_tac_toe"
 [dependencies]
 nannou = "0.18.1"
 rand = "0.8.5"
+libmath = "0.2.1"
