@@ -25,6 +25,9 @@ name = "maze-generator"
 # inspired by https://www.youtube.com/watch?v=HyK_Q5rrcr4
 # algorithm Randomized depth-first search https://en.wikipedia.org/wiki/Maze_generation_algorithm#Randomized_depth-first_search
 
+[[bin]]
+name = "tic_tac_toe"
+
 [dependencies]
 nannou = "0.18.1"
 rand = "0.8.5"
