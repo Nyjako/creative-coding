@@ -120,19 +120,31 @@ fn draw_maze(maze: [[Cell; ROWS as usize]; COLS as usize], draw: &Draw) {
 
             if temp.bottom && j != 0 {
                 if !maze[i as usize][j as usize - 1].top {
-                    draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x + W_SPACING, temp_y)).color(WALLS_COL).weight(STROKE);
+                    draw.line()
+                        .start(pt2(temp_x, temp_y))
+                        .end(pt2(temp_x + W_SPACING, temp_y))
+                        .color(WALLS_COL).weight(STROKE);
                 }
             }
             if temp.top && j != COLS - 1 {
-                    draw.line().start(pt2(temp_x, temp_y + H_SPACING)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
+                    draw.line()
+                        .start(pt2(temp_x, temp_y + H_SPACING))
+                        .end(pt2(temp_x + W_SPACING, temp_y + H_SPACING))
+                        .color(WALLS_COL).weight(STROKE);
             }
             if temp.left && i != 0 {
                 if !maze[i as usize - 1][j as usize].right {
-                    draw.line().start(pt2(temp_x, temp_y)).end(pt2(temp_x, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
+                    draw.line()
+                        .start(pt2(temp_x, temp_y))
+                        .end(pt2(temp_x, temp_y + H_SPACING))
+                        .color(WALLS_COL).weight(STROKE);
                 }
             }
             if temp.right && i != ROWS - 1 {
-                draw.line().start(pt2(temp_x + W_SPACING, temp_y)).end(pt2(temp_x + W_SPACING, temp_y + H_SPACING)).color(WALLS_COL).weight(STROKE);
+                draw.line()
+                    .start(pt2(temp_x + W_SPACING, temp_y))
+                    .end(pt2(temp_x + W_SPACING, temp_y + H_SPACING))
+                    .color(WALLS_COL).weight(STROKE);
             }
         }
     }
