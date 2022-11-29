@@ -26,36 +26,86 @@ fn main() {
 struct Model {
     board: [[CellState; BOARD_SIZE]; BOARD_SIZE],
     current_player: CellState,
-    current: Vec2
+    current: Vec2,
+    finished: bool
 }
 
-fn model(app: &App) -> Model {
+fn model(_app: &App) -> Model {
 
     Model {
         board: [[CellState::Empty; BOARD_SIZE]; BOARD_SIZE],
         current_player: CellState::Player1,
-        current: pt2(0.0, 0.0)
+        current: pt2(0.0, 0.0),
+        finished: false
     }
 }
 
+fn p_eq(p1: CellState, p2: CellState) -> bool {
+    match p1 {
+        CellState::Player1 => match p2 {
+            CellState::Player1 => true,
+            _ => false,
+        }
+        CellState::Player2 => match p2 {
+            CellState::Player2 => true,
+            _ => false,
+        }
+        _ => false
+    }
+}
+
+fn check_win(board: [[CellState; BOARD_SIZE]; BOARD_SIZE], player: CellState) -> bool {
+    (p_eq(board[0][0], player) && p_eq(board[1][0], player) && p_eq(board[2][0], player)) || // ROWS
+    (p_eq(board[0][1], player) && p_eq(board[1][1], player) && p_eq(board[2][1], player)) ||
+    (p_eq(board[0][2], player) && p_eq(board[1][2], player) && p_eq(board[2][2], player)) ||
+    (p_eq(board[0][0], player) && p_eq(board[0][1], player) && p_eq(board[0][2], player)) || // COLS
+    (p_eq(board[1][0], player) && p_eq(board[1][1], player) && p_eq(board[1][2], player)) ||
+    (p_eq(board[2][0], player) && p_eq(board[2][1], player) && p_eq(board[2][2], player)) ||
+    (p_eq(board[0][0], player) && p_eq(board[1][1], player) && p_eq(board[2][2], player)) || // DIAGONALS
+    (p_eq(board[0][2], player) && p_eq(board[1][1], player) && p_eq(board[2][0], player))
+
+}
+
 fn update(app: &App, model: &mut Model, _update: Update) {
-    model.board[1][1] = CellState::Player1;
-    model.board[2][2] = CellState::Player2;
-    let button = app.mouse.buttons.left();
+    if model.finished {
+        ()
+    }
+    else {
+        model.board[1][1] = CellState::Player1;
+        model.board[2][2] = CellState::Player2;
+        let button = app.mouse.buttons.left();
 
-    let bound = app.window_rect();
-    let mouse_pos = app.mouse.position() + pt2(bound.right(), bound.top());
+        let bound = app.window_rect();
+        let mouse_pos = app.mouse.position() + pt2(bound.right(), bound.top());
 
-    let current_cell = pt2(
-        round::floor((mouse_pos.x / CELL_WIDTH) as f64, 0) as f32,
-        BOARD_SIZE as f32 - 1.0 - round::floor((mouse_pos.y / CELL_HEIGHT) as f64, 0) as f32 
-        // I need to reverse this because I start drawing from bottom left
-    );
+        let current_cell = pt2(
+            round::floor((mouse_pos.x / CELL_WIDTH) as f64, 0) as f32,
+            BOARD_SIZE as f32 - 1.0 - round::floor((mouse_pos.y / CELL_HEIGHT) as f64, 0) as f32 
+            // I need to reverse this because I start drawing from bottom left
+        );
 
-    model.current = current_cell;
+        model.current = current_cell;
 
-    if button.is_down() {
-        println!("Pressed left mouse at X:{} Y:{}", app.mouse.x, app.mouse.y);
+        if button.is_down() {
+            // println!("Pressed left mouse at X:{} Y:{}", app.mouse.x, app.mouse.y);
+            match model.board[current_cell.x as usize][current_cell.y as usize] {
+                CellState::Empty => {
+                    model.board[current_cell.x as usize][current_cell.y as usize] = model.current_player;
+
+                    model.finished = check_win(model.board, model.current_player);
+                    if model.finished {
+                        println!("Finished");
+                    }
+
+                    match model.current_player {
+                        CellState::Player1 => model.current_player = CellState::Player2,
+                        CellState::Player2 => model.current_player = CellState::Player1,
+                        _ => {}
+                    }
+                },
+                _ => {}
+            }
+        }
     }
 }
 
