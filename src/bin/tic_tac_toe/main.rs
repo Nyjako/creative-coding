@@ -27,7 +27,8 @@ struct Model {
     board: [[CellState; BOARD_SIZE]; BOARD_SIZE],
     current_player: CellState,
     current: Vec2,
-    finished: bool
+    finished: bool,
+    win_pos: (Vec2, Vec2)
 }
 
 fn model(_app: &App) -> Model {
@@ -36,7 +37,8 @@ fn model(_app: &App) -> Model {
         board: [[CellState::Empty; BOARD_SIZE]; BOARD_SIZE],
         current_player: CellState::Player1,
         current: pt2(0.0, 0.0),
-        finished: false
+        finished: false,
+        win_pos: (pt2(0.0, 0.0), pt2(0.0, 0.0))
     }
 }
 
@@ -54,88 +56,76 @@ fn p_eq(p1: CellState, p2: CellState) -> bool {
     }
 }
 
-fn check_win(board: [[CellState; BOARD_SIZE]; BOARD_SIZE], player: CellState) -> bool {
-    let mut counter: i32;
+fn check_win(board: [[CellState; BOARD_SIZE]; BOARD_SIZE], player: CellState) -> (bool, Vec2, Vec2) {
+    let mut counter: [(i32, Vec2); 4] = [(0, pt2(0.0, 0.0));4];
 
-    // TODO: Merge all lops into one
-    // TODO: Display line where player won
-    for j in 0..BOARD_SIZE {
-        counter = 0;
-        for i in 0..BOARD_SIZE {
+    for i in 0..BOARD_SIZE {
+        counter[0].0 = 0;
+        counter[1].0 = 0;
+        for j in 0..BOARD_SIZE {
+            counter[2].0 = 0;
+            counter[3].0 = 0;
+
             if p_eq(board[i][j], player) {
-                counter += 1;
-                if counter == REQUIRED as i32 {
-                    return true;
+                if counter[0].0 == 0 { counter[0].1 = pt2(i as f32, j as f32); }
+                counter[0].0 += 1;
+                if counter[0].0 == REQUIRED as i32 {
+                    return (true, counter[0].1, pt2(i as f32, j as f32));
                 }
             }
             else {
-                counter = 0;
+                counter[0].0 = 0;
             }
-        }
-    }
-    for i in 0..BOARD_SIZE {
-        counter = 0;
-        for j in 0..BOARD_SIZE {
-            if p_eq(board[i][j], player) {
-                counter += 1;
-                if counter == REQUIRED as i32 {
-                    return true;
+
+            if p_eq(board[j][i], player) {
+                if counter[1].0 == 0 { counter[1].1 = pt2(j as f32, i as f32); }
+                counter[1].0 += 1;
+                if counter[1].0 == REQUIRED as i32 {
+                    return (true, counter[1].1, pt2(j as f32, i as f32));
                 }
             }
             else {
-                counter = 0;
+                counter[1].0 = 0;
             }
-        }
-    }
-    
-    counter = 0;
-    for i in 0..BOARD_SIZE {
-        for j in 0..BOARD_SIZE {
+
             for x in 0..REQUIRED {
                 if i + x < BOARD_SIZE && j + x < BOARD_SIZE {
                     if p_eq(board[i + x][j + x], player) {
-                        counter += 1;
-                        if counter == REQUIRED as i32 {
-                            return true;
+                        if counter[2].0 == 0 { counter[2].1 = pt2((i+x) as f32, (j+x) as f32); }
+                        counter[2].0 += 1;
+                        if counter[2].0 == REQUIRED as i32 {
+                            return (true, counter[2].1, pt2((i+x) as f32, (j+x) as f32));
                         }
                     }
                     else {
-                        counter = 0;
-                        break;
+                        counter[2].0 = 0;
                     }
                 }
                 else {
-                    counter = 0;
-                    break;
+                    counter[2].0 = 0;
                 }
-            }
-        }
-    }
-    counter = 0;
-    for i in 0..BOARD_SIZE {
-        for j in 0..BOARD_SIZE {
-            for x in 0..REQUIRED {
+
                 if i + x < BOARD_SIZE && BOARD_SIZE as i32 - (j + x) as i32 - 1 >= 0 {
                     if p_eq(board[i + x][BOARD_SIZE - (j + x) - 1], player) {
-                        counter += 1;
-                        if counter == REQUIRED as i32 {
-                            return true;
+                        if counter[3].0 == 0 { counter[2].1 = pt2((i+x) as f32, (BOARD_SIZE - (j + x) - 1) as f32); }
+                        counter[3].0 += 1;
+                        if counter[3].0 == REQUIRED as i32 {
+                            return (true, counter[3].1, pt2((i+x) as f32, (BOARD_SIZE - (j + x) - 1) as f32));
                         }
                     }
                     else {
-                        counter = 0;
-                        break;
+                        counter[3].0 = 0;
                     }
                 }
                 else {
-                    counter = 0;
-                    break;
+                    counter[3].0 = 0;
                 }
             }
+
         }
     }
 
-    return false;
+    return  (false, pt2(0.0, 0.0), pt2(0.0, 0.0));
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
@@ -162,9 +152,11 @@ fn update(app: &App, model: &mut Model, _update: Update) {
                 CellState::Empty => {
                     model.board[current_cell.x as usize][current_cell.y as usize] = model.current_player;
 
-                    model.finished = check_win(model.board, model.current_player);
+                    let output = check_win(model.board, model.current_player);
+                    model.finished = output.0;
                     if model.finished {
                         println!("Finished");
+                        model.win_pos = (output.1, output.2);
                     }
 
                     match model.current_player {
@@ -179,7 +171,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     }
 }
 
-fn draw_board(draw: &Draw, board: [[CellState; BOARD_SIZE]; BOARD_SIZE], current: Vec2) {
+fn draw_board(draw: &Draw, board: [[CellState; BOARD_SIZE]; BOARD_SIZE], current: Vec2, win_pos: Option<(Vec2, Vec2)>) {
     // println!("{} {}", CELL_HEIGHT, CELL_WIDTH);
 
     for j in 0..BOARD_SIZE {
@@ -233,14 +225,32 @@ fn draw_board(draw: &Draw, board: [[CellState; BOARD_SIZE]; BOARD_SIZE], current
             }
         }
     }
+
+    if win_pos.is_some() {
+        let pos = win_pos.unwrap();
+        let temp_point1 = pt2(CELL_WIDTH * pos.0.x, HEIGHT as f32 - CELL_HEIGHT * pos.0.y);
+        let temp_point2 = pt2(CELL_WIDTH * pos.1.x, HEIGHT as f32 - CELL_HEIGHT * pos.1.y);
+
+        draw.line()
+            .start(temp_point1 + pt2(CELL_WIDTH / 2.0, -(CELL_HEIGHT / 2.0)))
+            .end(temp_point2 + pt2(CELL_WIDTH / 2.0, -(CELL_HEIGHT / 2.0)))
+            .weight(5.0)
+            .color(PINK);
+    }
 }
 
 fn view(app: &App, model: &Model, frame: Frame){
     frame.clear(WHITE);
 
     let boundary = app.window_rect();
-    let draw = app.draw().x_y(boundary.left(), boundary.bottom()); // (0,0) is now left bottom 
-    draw_board(&draw, model.board, model.current);
+    let draw = app.draw().x_y(boundary.left(), boundary.bottom()); // (0,0) is now left bottom
+    
+    if model.finished {
+        draw_board(&draw, model.board, model.current, Some(model.win_pos));
+    }
+    else {
+        draw_board(&draw, model.board, model.current, None);
+    }
 
     draw.to_frame(app, &frame).unwrap();
 }
