@@ -1,7 +1,7 @@
 use nannou::prelude::*;
 use math::round;
 
-const BOARD_SIZE: usize = 3;
+const BOARD_SIZE: usize = 10;
 const REQUIRED: usize   = 3;
 const WIDTH: u32        = 600;
 const HEIGHT: u32       = 600;
@@ -88,29 +88,50 @@ fn check_win(board: [[CellState; BOARD_SIZE]; BOARD_SIZE], player: CellState) ->
         }
     }
     
-    // FIXME: This won't work for board size larger than 3x3
     counter = 0;
     for i in 0..BOARD_SIZE {
-        if p_eq(board[i][i], player) {
-            counter += 1;
-            if counter == REQUIRED as i32 {
-                return true;
+        for j in 0..BOARD_SIZE {
+            for x in 0..REQUIRED {
+                if i + x < BOARD_SIZE && j + x < BOARD_SIZE {
+                    if p_eq(board[i + x][j + x], player) {
+                        counter += 1;
+                        if counter == REQUIRED as i32 {
+                            return true;
+                        }
+                    }
+                    else {
+                        counter = 0;
+                        break;
+                    }
+                }
+                else {
+                    counter = 0;
+                    break;
+                }
             }
-        }
-        else {
-            counter = 0;
         }
     }
     counter = 0;
     for i in 0..BOARD_SIZE {
-        if p_eq(board[i][BOARD_SIZE - i - 1], player) {
-            counter += 1;
-            if counter == REQUIRED as i32 {
-                return true;
+        for j in 0..BOARD_SIZE {
+            for x in 0..REQUIRED {
+                if i + x < BOARD_SIZE && BOARD_SIZE as i32 - (j + x) as i32 - 1 >= 0 {
+                    if p_eq(board[i + x][BOARD_SIZE - (j + x) - 1], player) {
+                        counter += 1;
+                        if counter == REQUIRED as i32 {
+                            return true;
+                        }
+                    }
+                    else {
+                        counter = 0;
+                        break;
+                    }
+                }
+                else {
+                    counter = 0;
+                    break;
+                }
             }
-        }
-        else {
-            counter = 0;
         }
     }
 
