@@ -55,15 +55,66 @@ fn p_eq(p1: CellState, p2: CellState) -> bool {
 }
 
 fn check_win(board: [[CellState; BOARD_SIZE]; BOARD_SIZE], player: CellState) -> bool {
-    (p_eq(board[0][0], player) && p_eq(board[1][0], player) && p_eq(board[2][0], player)) || // ROWS
-    (p_eq(board[0][1], player) && p_eq(board[1][1], player) && p_eq(board[2][1], player)) ||
-    (p_eq(board[0][2], player) && p_eq(board[1][2], player) && p_eq(board[2][2], player)) ||
-    (p_eq(board[0][0], player) && p_eq(board[0][1], player) && p_eq(board[0][2], player)) || // COLS
-    (p_eq(board[1][0], player) && p_eq(board[1][1], player) && p_eq(board[1][2], player)) ||
-    (p_eq(board[2][0], player) && p_eq(board[2][1], player) && p_eq(board[2][2], player)) ||
-    (p_eq(board[0][0], player) && p_eq(board[1][1], player) && p_eq(board[2][2], player)) || // DIAGONALS
-    (p_eq(board[0][2], player) && p_eq(board[1][1], player) && p_eq(board[2][0], player))
+    let mut counter: i32;
 
+    // TODO: Merge all lops into one
+    // TODO: Display line where player won
+    for j in 0..BOARD_SIZE {
+        counter = 0;
+        for i in 0..BOARD_SIZE {
+            if p_eq(board[i][j], player) {
+                counter += 1;
+                if counter == REQUIRED as i32 {
+                    return true;
+                }
+            }
+            else {
+                counter = 0;
+            }
+        }
+    }
+    for i in 0..BOARD_SIZE {
+        counter = 0;
+        for j in 0..BOARD_SIZE {
+            if p_eq(board[i][j], player) {
+                counter += 1;
+                if counter == REQUIRED as i32 {
+                    return true;
+                }
+            }
+            else {
+                counter = 0;
+            }
+        }
+    }
+    
+    // FIXME: This won't work for board size larger than 3x3
+    counter = 0;
+    for i in 0..BOARD_SIZE {
+        if p_eq(board[i][i], player) {
+            counter += 1;
+            if counter == REQUIRED as i32 {
+                return true;
+            }
+        }
+        else {
+            counter = 0;
+        }
+    }
+    counter = 0;
+    for i in 0..BOARD_SIZE {
+        if p_eq(board[i][BOARD_SIZE - i - 1], player) {
+            counter += 1;
+            if counter == REQUIRED as i32 {
+                return true;
+            }
+        }
+        else {
+            counter = 0;
+        }
+    }
+
+    return false;
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
@@ -71,8 +122,6 @@ fn update(app: &App, model: &mut Model, _update: Update) {
         ()
     }
     else {
-        model.board[1][1] = CellState::Player1;
-        model.board[2][2] = CellState::Player2;
         let button = app.mouse.buttons.left();
 
         let bound = app.window_rect();
